@@ -1,7 +1,9 @@
 #pragma once
 
 #include "ofMain.h"
-#include "src/Flower.h"
+#include "lib/ofxNetwork/src/ofxNetwork.h"
+
+#include "Flower.h"
 
 #define FIELD_LENGTH 100
 #define FIELD_WIDTH 100
@@ -10,6 +12,8 @@ class Field : public ofBaseApp{
     private:
         vector<Flower*> flowers;
         ofEasyCam camera;
+        int frameCount;
+        ofxUDPManager udpConnection;
 
 	public:
 		void setup();

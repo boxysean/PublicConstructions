@@ -17,7 +17,7 @@ class Flower {
         double x, z, h;
         double stemWidth;
         double orientation;
-        int brightness[4];
+        float brightness[4];
 
         Flower(double xrange, double zrange);
         void draw();

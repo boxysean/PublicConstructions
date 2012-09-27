@@ -11,7 +11,11 @@ Flower::Flower(double xrange, double zrange) {
     z = ofRandom(-zrange, zrange);
     h = ofRandom(FLOWER_STEM_MIN_SIZE, FLOWER_STEM_MAX_SIZE);
     stemWidth = FLOWER_STEM_WIDTH;
-    orientation = ofRandom(360);
+    orientation = ofRandom(180);
+
+    for (int i = 0; i < 4; i++) {
+        brightness[i] = 0;
+    }
 }
 
 void Flower::draw() {
@@ -19,24 +23,25 @@ void Flower::draw() {
 
     ofTranslate(x, 0, z);
 
+    // --- Draw the stem ---
 
     ofPushMatrix();
 
-    ofSetColor(ofColor::gray);
-
     GLUquadric* quad = gluNewQuadric();
     // tell GLU how to create the cylinder
-//    gluQuadricNormals(quad, GLU_SMOOTH);
-//    gluQuadricDrawStyle(quad, GLU_FILL);
-//    gluQuadricTexture(quad, GL_TRUE);
-//    gluQuadricOrientation(quad, GLU_OUTSIDE);
+    gluQuadricNormals(quad, GLU_SMOOTH);
+    gluQuadricDrawStyle(quad, GLU_FILL);
+    gluQuadricOrientation(quad, GLU_OUTSIDE); // generates normal for quadric
     ofRotateX(90);
+
+    GLfloat grey[] = {.75f, .75f, .75f, 1.f};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, grey);
 
     gluCylinder(quad, stemWidth, stemWidth, h, FLOWER_STEM_SLICES, 1);
 
-    gluDeleteQuadric(quad);
-
     ofPopMatrix();
+
+    // --- Draw the flower ---
 
     ofPushMatrix();
     ofTranslate(0, -h, 0);
@@ -45,23 +50,38 @@ void Flower::draw() {
 
     ofRotateZ(45);
 
-    ofSetColor(ofColor::white);
+    GLfloat white[] = {1.f, 1.f, 1.f, 1.f};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, white);
+
+    ofPushMatrix();
+    ofScale(1, 1, 0.6);
     ofBox(0, 0, 0, FLOWER_HEAD_SIZE);
+    ofPopMatrix();
 
-    GLUquadric* quad2 = gluNewQuadric();
+    gluQuadricOrientation(quad, GLU_OUTSIDE); // generates normal for quadric
 
-    ofSetColor(ofColor::yellow);
+//    GLfloat whitez[] = {0.8f, 0.8f, 0.8f, 1.0f};
+//    GLfloat cyan[] = {0.f, .8f, .8f, 1.f};
+//    glMaterialfv(GL_FRONT, GL_DIFFUSE, cyan);
+//    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, whitez);
+    GLfloat shininess[] = {50};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
+
 
     for (int i = 0; i < 4; i++) {
-        // maybe do a rotation...? for some flowers..
+        GLfloat yellow[] = {brightness[i], brightness[i], 0.f, 1.f};
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, yellow);
+
         ofPushMatrix();
         ofTranslate(dx[i] * FLOWER_PETAL_RADIUS*2, dy[i] * FLOWER_PETAL_RADIUS*2, -FLOWER_PETAL_WIDTH/2);
-        gluCylinder(quad2, FLOWER_PETAL_RADIUS, FLOWER_PETAL_RADIUS, FLOWER_PETAL_WIDTH, FLOWER_PETAL_SLICES, 1);
-        ofCircle(0, 0, FLOWER_PETAL_RADIUS);
+        gluCylinder(quad, FLOWER_PETAL_RADIUS, FLOWER_PETAL_RADIUS, FLOWER_PETAL_WIDTH, FLOWER_PETAL_SLICES, 1);
+        gluDisk(quad, 0, FLOWER_PETAL_RADIUS, FLOWER_PETAL_SLICES, 1);
+        ofTranslate(0, 0, FLOWER_PETAL_WIDTH);
+        gluDisk(quad, 0, FLOWER_PETAL_RADIUS, FLOWER_PETAL_SLICES, 1);
         ofPopMatrix();
     }
 
-    gluDeleteQuadric(quad2);
+    gluDeleteQuadric(quad);
 
     ofPopMatrix();
 
