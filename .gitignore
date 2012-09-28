@@ -1,5 +1,9 @@
 FlowerGardenModel/bin
 FlowerGardenModel/obj
 
-FlowerGardenModel/*.{cbp,layout,workspace}
+FlowerGardenModel/*.cbp
+FlowerGardenModel/*.layout
+FlowerGardenModel/*.workspace
+
+*.pyc
 
