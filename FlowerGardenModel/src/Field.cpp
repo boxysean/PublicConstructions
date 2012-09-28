@@ -12,10 +12,8 @@ void Field::setup(){
 
     glShadeModel(GL_SMOOTH);
 
-    GLfloat lightpos[] = {1., 1., 0, 1.};
+    GLfloat lightpos[] = {-1., -1., 0.5, 1.};
     glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
-    GLfloat lightpos2[] = {1., 0., 0.5, 1.};
-    glLightfv(GL_LIGHT1, GL_POSITION, lightpos2);
 
     udpConnection.Create();
     udpConnection.Bind(8080);
@@ -26,21 +24,32 @@ void Field::setup(){
 void Field::update(){
     char udpMessage[512];
     int recvd = udpConnection.Receive(udpMessage, 512);
-    string message = udpMessage;
 
-    if (recvd >= 0 || message != "") {
-        cout << "received: " << message << " " << recvd << endl;
+    if (recvd >= 0) {
+        char *pEnd = udpMessage;
+        // TODO handle bad protocol messages
+        while (pEnd < udpMessage + recvd - 1) { // -1 is fudge factor in the protocol
+            int channel = strtol(pEnd, &pEnd, 10);
+            int value = strtol(pEnd, &pEnd, 10);
+
+            int flowerIdx = channel / 4;
+            int lightIdx = channel % 4;
+
+            printf("flower %d light %d brightness %d\n", flowerIdx, lightIdx, value);
+
+            flowers[flowerIdx]->brightness[lightIdx] = value;
+        }
     }
 }
 
 //--------------------------------------------------------------
 void Field::draw(){
-    float overallBrightness = (frameCount % 1000) / 1000.0;
-    for (unsigned int i = 0; i < flowers.size(); i++) {
-        for (int j = 0; j < 4; j++) {
-            flowers[i]->brightness[j] = overallBrightness;
-        }
-    }
+//    float overallBrightness = (frameCount % 1000) / 1000.0;
+//    for (unsigned int i = 0; i < flowers.size(); i++) {
+//        for (int j = 0; j < 4; j++) {
+//            flowers[i]->brightness[j] = overallBrightness;
+//        }
+//    }
 
     ofTranslate(ofGetWidth() / 2, 3 * ofGetHeight() / 4, 0);
 

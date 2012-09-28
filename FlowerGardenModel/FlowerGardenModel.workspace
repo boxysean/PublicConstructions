@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<CodeBlocks_workspace_file>
-	<Workspace title="FlowerGardenModel">
-		<Project filename="../../of_v0071_linux64_release/libs/openFrameworksCompiled/project/linux64/libopenFrameworks.cbp" />
-		<Project filename="FlowerGardenModel.cbp" active="1">
-      <Depends filename="../../of_v0071_linux64_release/libs/openFrameworksCompiled/project/linux64/libopenFrameworks.cbp" />
-		</Project>
-	</Workspace>
-</CodeBlocks_workspace_file>

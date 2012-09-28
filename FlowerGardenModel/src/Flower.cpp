@@ -69,7 +69,7 @@ void Flower::draw() {
 
 
     for (int i = 0; i < 4; i++) {
-        GLfloat yellow[] = {brightness[i], brightness[i], 0.f, 1.f};
+        GLfloat yellow[] = {brightness[i] / 255.f, brightness[i] / 255.f, 0.f, 1.f};
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, yellow);
 
         ofPushMatrix();

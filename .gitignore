@@ -1,2 +1,5 @@
 FlowerGardenModel/bin
 FlowerGardenModel/obj
+
+FlowerGardenModel/*.{cbp,layout,workspace}
+
