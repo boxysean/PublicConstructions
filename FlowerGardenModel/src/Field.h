@@ -5,8 +5,8 @@
 
 #include "Flower.h"
 
-#define FIELD_LENGTH 100
-#define FIELD_WIDTH 100
+#define FIELD_LENGTH 200
+#define FIELD_WIDTH 200
 
 class Field : public ofBaseApp{
     private:

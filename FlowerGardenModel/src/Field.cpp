@@ -2,7 +2,7 @@
 
 //--------------------------------------------------------------
 void Field::setup(){
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 16; i++) {
         flowers.push_back(new Flower(FIELD_WIDTH, FIELD_LENGTH));
     }
 
@@ -51,12 +51,12 @@ void Field::draw(){
 //        }
 //    }
 
-    ofTranslate(ofGetWidth() / 2, 3 * ofGetHeight() / 4, 0);
+//    ofTranslate(ofGetWidth() / 2, 3 * ofGetHeight() / 4, 0);
 
     camera.begin();
 
     ofRotateZ(180);
-    ofTranslate(0, ofGetHeight() / 4, 0);
+    ofTranslate(0, ofGetHeight() / 6, 0);
 
     drawGrass();
 
