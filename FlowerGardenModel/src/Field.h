@@ -1,12 +1,17 @@
 #pragma once
 
+#include <fstream>
+
 #include "ofMain.h"
 #include "lib/ofxNetwork/src/ofxNetwork.h"
+#include "yaml.h"
 
 #include "Flower.h"
 
 #define FIELD_LENGTH 200
 #define FIELD_WIDTH 200
+
+#define FLOWERS_CONF "/home/boxysean/workspace/PublicConstructions/MasterControl/flowers.conf"
 
 class Field : public ofBaseApp{
     private:
@@ -30,5 +35,6 @@ class Field : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 
+        void loadFlowers(char *fileName);
 		void drawGrass();
 };

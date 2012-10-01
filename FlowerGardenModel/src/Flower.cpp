@@ -6,6 +6,18 @@
 static int dx[] = { 1, 0, -1, 0 };
 static int dy[] = { 0, -1, 0, 1 };
 
+Flower::Flower(double xx, double yy, double hh) {
+    x = xx;
+    z = yy;
+    h = hh;
+    stemWidth = FLOWER_STEM_WIDTH;
+    orientation = ofRandom(180);
+
+    for (int i = 0; i < 4; i++) {
+        brightness[i] = 0;
+    }
+}
+
 Flower::Flower(double xrange, double zrange) {
     x = ofRandom(-xrange, xrange);
     z = ofRandom(-zrange, zrange);

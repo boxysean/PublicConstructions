@@ -1,10 +1,62 @@
 #include "Field.h"
 
+
+
+struct FlowerConf {
+    float x, y, h;
+};
+
+struct FlowersConf {
+    vector<FlowerConf> flowerConfs;
+};
+
+
+void operator >> (const YAML::Node& node, FlowerConf& flower) {
+    node["x"] >> flower.x;
+    node["y"] >> flower.y;
+    node["h"] >> flower.h;
+}
+
+void operator >> (const YAML::Node& node, FlowersConf& flowersConf) {
+   const YAML::Node& flowersNode = node["flowers"];
+   for(unsigned i=0;i<flowersNode.size();i++) {
+        FlowerConf flowerConf;
+        flowersNode[i] >> flowerConf;
+        flowersConf.flowerConfs.push_back(flowerConf);
+   }
+}
+
+
+//--------------------------------------------------------------
+
+void Field::loadFlowers(char *fileName) {
+    cout << "here" << endl;
+    ifstream fin(fileName);
+    YAML::Parser parser(fin);
+
+    cout << fileName << endl;
+    YAML::Node doc;
+    parser.GetNextDocument(doc);
+
+    // this is probably the worst code I've ever written
+
+    for(int i = 0; i < doc.size(); i++) {
+        FlowersConf flowersConf;
+        doc >> flowersConf;
+        for (int i = 0; i < flowersConf.flowerConfs.size(); i++) {
+            flowers.push_back(new Flower(flowersConf.flowerConfs[i].x, flowersConf.flowerConfs[i].y, flowersConf.flowerConfs[i].h));
+        }
+    }
+
+//    for (int i = 0; i < 16; i++) {
+//        flowers.push_back(new Flower(FIELD_WIDTH, FIELD_LENGTH));
+//    }
+
+}
+
 //--------------------------------------------------------------
 void Field::setup(){
-    for (int i = 0; i < 16; i++) {
-        flowers.push_back(new Flower(FIELD_WIDTH, FIELD_LENGTH));
-    }
+    loadFlowers(FLOWERS_CONF);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);

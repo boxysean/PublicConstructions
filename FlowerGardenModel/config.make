@@ -10,14 +10,16 @@ OF_ROOT = ../../of_v0071_linux64_release
 # for example search paths like:
 # USER_CFLAGS = -I src/objects
 
-USER_CFLAGS = 
+USER_CFLAGS = -I/usr/local/include/yaml-cpp
 
 
 # USER_LDFLAGS allows to pass custom flags to the linker
 # for example libraries like:
 # USER_LDFLAGS = libs/libawesomelib.a
 
-USER_LDFLAGS =
+USER_LDFLAGS = /home/boxysean/workspace/of_v0071_linux64_release/examples/addons/allAddonsExample/obj/x86_64Debug/addons/ofxNetwork/src/ofxUDPManager.o /usr/local/lib/libyaml-cpp.a
+
+USER_LIBS = -L/usr/local/lib/
 
 
 EXCLUDE_FROM_SOURCE="bin,.xcodeproj,obj"

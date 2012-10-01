@@ -20,6 +20,7 @@ class Flower {
         float brightness[4];
 
         Flower(double xrange, double zrange);
+        Flower(double x, double y, double h);
         void draw();
 };
 
