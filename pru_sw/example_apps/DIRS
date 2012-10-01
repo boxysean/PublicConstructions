@@ -1,0 +1,12 @@
+APP_DIRS :=
+
+APP_DIRS += dmx
+
+ASSEM_FILES :=
+
+ASSEM_FILES += dmx/dmx.p
+
+BIN_FILES :=
+
+BIN_FILES += dmx.bin
+

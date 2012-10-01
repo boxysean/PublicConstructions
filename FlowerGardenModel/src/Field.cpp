@@ -30,20 +30,18 @@ void operator >> (const YAML::Node& node, FlowersConf& flowersConf) {
 //--------------------------------------------------------------
 
 void Field::loadFlowers(char *fileName) {
-    cout << "here" << endl;
     ifstream fin(fileName);
     YAML::Parser parser(fin);
 
-    cout << fileName << endl;
     YAML::Node doc;
     parser.GetNextDocument(doc);
 
     // this is probably the worst code I've ever written
 
-    for(int i = 0; i < doc.size(); i++) {
+    for(unsigned int i = 0; i < doc.size(); i++) {
         FlowersConf flowersConf;
         doc >> flowersConf;
-        for (int i = 0; i < flowersConf.flowerConfs.size(); i++) {
+        for (unsigned int i = 0; i < flowersConf.flowerConfs.size(); i++) {
             flowers.push_back(new Flower(flowersConf.flowerConfs[i].x, flowersConf.flowerConfs[i].y, flowersConf.flowerConfs[i].h));
         }
     }
@@ -79,9 +77,10 @@ void Field::update(){
 
     if (recvd >= 0) {
         char *pEnd = udpMessage;
+        int channels = strtol(pEnd, &pEnd, 10);
+        int channel = 0;
         // TODO handle bad protocol messages
         while (pEnd < udpMessage + recvd - 1) { // -1 is fudge factor in the protocol
-            int channel = strtol(pEnd, &pEnd, 10);
             int value = strtol(pEnd, &pEnd, 10);
 
             int flowerIdx = channel / 4;
@@ -90,6 +89,7 @@ void Field::update(){
             printf("flower %d light %d brightness %d\n", flowerIdx, lightIdx, value);
 
             flowers[flowerIdx]->brightness[lightIdx] = value;
+            channel++;
         }
     }
 }

@@ -255,13 +255,11 @@ def loadFlowers(fileName):
 ################################################################################
 
 def constructPayload(flowers):
-  res = ""
-  counter = 0
+  res = "%3d " % (len(flowers)*N_LIGHTS)
 
   for flower in flowers:
     for idx in range(len(flower.lights)):
-      res += "%3d %3d " % (counter, min(max(flower.lights[idx].getBrightness(frameCount), 0), 255))
-      counter = counter+1
+      res += "%3d " % (min(max(flower.lights[idx].getBrightness(frameCount), 0), 255))
 
   return res
 
