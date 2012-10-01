@@ -3,7 +3,7 @@
 
 
 struct FlowerConf {
-    float x, y, h;
+    float x, y, h, rotation;
 };
 
 struct FlowersConf {
@@ -15,6 +15,7 @@ void operator >> (const YAML::Node& node, FlowerConf& flower) {
     node["x"] >> flower.x;
     node["y"] >> flower.y;
     node["h"] >> flower.h;
+    node["rotation"] >> flower.rotation;
 }
 
 void operator >> (const YAML::Node& node, FlowersConf& flowersConf) {
@@ -42,7 +43,7 @@ void Field::loadFlowers(char *fileName) {
         FlowersConf flowersConf;
         doc >> flowersConf;
         for (unsigned int i = 0; i < flowersConf.flowerConfs.size(); i++) {
-            flowers.push_back(new Flower(flowersConf.flowerConfs[i].x, flowersConf.flowerConfs[i].y, flowersConf.flowerConfs[i].h));
+            flowers.push_back(new Flower(flowersConf.flowerConfs[i].x, flowersConf.flowerConfs[i].y, flowersConf.flowerConfs[i].h, flowersConf.flowerConfs[i].rotation));
         }
     }
 

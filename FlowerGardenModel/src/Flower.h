@@ -15,12 +15,11 @@
 class Flower {
     public:
         double x, z, h;
-        double stemWidth;
-        double orientation;
+        double rotation;
         float brightness[4];
 
         Flower(double xrange, double zrange);
-        Flower(double x, double y, double h);
+        Flower(double x, double y, double h, double rotation);
         void draw();
 };
 

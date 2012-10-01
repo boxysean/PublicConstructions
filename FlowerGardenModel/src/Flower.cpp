@@ -6,12 +6,11 @@
 static int dx[] = { 1, 0, -1, 0 };
 static int dy[] = { 0, -1, 0, 1 };
 
-Flower::Flower(double xx, double yy, double hh) {
+Flower::Flower(double xx, double yy, double hh, double rr) {
     x = xx;
     z = yy;
     h = hh;
-    stemWidth = FLOWER_STEM_WIDTH;
-    orientation = ofRandom(180);
+    rotation = rr;
 
     for (int i = 0; i < 4; i++) {
         brightness[i] = 0;
@@ -22,8 +21,7 @@ Flower::Flower(double xrange, double zrange) {
     x = ofRandom(-xrange, xrange);
     z = ofRandom(-zrange, zrange);
     h = ofRandom(FLOWER_STEM_MIN_SIZE, FLOWER_STEM_MAX_SIZE);
-    stemWidth = FLOWER_STEM_WIDTH;
-    orientation = ofRandom(180);
+    rotation = ofRandom(180);
 
     for (int i = 0; i < 4; i++) {
         brightness[i] = 0;
@@ -49,7 +47,7 @@ void Flower::draw() {
     GLfloat grey[] = {.75f, .75f, .75f, 1.f};
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, grey);
 
-    gluCylinder(quad, stemWidth, stemWidth, h, FLOWER_STEM_SLICES, 1);
+    gluCylinder(quad, FLOWER_STEM_WIDTH, FLOWER_STEM_WIDTH, h, FLOWER_STEM_SLICES, 1);
 
     ofPopMatrix();
 
@@ -58,7 +56,7 @@ void Flower::draw() {
     ofPushMatrix();
     ofTranslate(0, -h, 0);
 
-    ofRotateY(orientation);
+    ofRotateY(rotation);
 
     ofRotateZ(45);
 

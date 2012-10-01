@@ -2,4 +2,6 @@ flowers:
  - x: 0
    y: 0
    h: 100
+   rotation: 0
+   lightsIdx: [0, 1, 2, 3]
 
