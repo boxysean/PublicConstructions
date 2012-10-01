@@ -2,6 +2,7 @@ import socket
 import time
 import random
 import sys
+import yaml
 
 from math import ceil
 
@@ -20,6 +21,8 @@ BRIGHTNESS_CACHING = False
 MAX_FRAMES = FPS
 MAX_FRAMES = -1
 
+FLOWERS_CONF = "flowers.conf"
+
 flowers = []
 effects = []
 
@@ -27,6 +30,11 @@ frameCount = 0
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
 s.connect((IPADDR, PORTNUM))
+
+################################################################################
+
+def log(msg):
+  print msg
 
 ################################################################################
 
@@ -127,9 +135,7 @@ class Full(Effect):
 
     for obj in objs:
       obj.register(self)
-#      print "brightness before", obj.getBrightness()
       obj.set(self, value)
-#      print "brightness before", obj.getBrightness()
 
   def remove(self):
     for obj in objs:
@@ -140,16 +146,14 @@ class Full(Effect):
 class Erratic(Effect):
   pass
 
+def erratic(repeat):
+  for q in range(repeat):
+    full(255 if q % 2 else 0, random.expovariate(10.0))
+
 ################################################################################
 
 class Fade(Effect):
   pass
-
-################################################################################
-
-def erratic(repeat):
-  for q in range(repeat):
-    full(255 if q % 2 else 0, random.expovariate(10.0))
 
 ################################################################################
 
@@ -201,14 +205,14 @@ class Light(Lightable):
 ################################################################################
 
 class Flower(Lightable):
-  def __init__(self):
+  def __init__(self, x=0, y=0, h=0):
     super(Flower, self).__init__()
     self.lights = [Light(self), Light(self), Light(self), Light(self)] # TRDL
     self.lightsIdx = range(len(self.lights))
 
-    self.x = 0
-    self.y = 0
-    self.h = 0
+    self.x = x
+    self.y = y
+    self.h = h
 
   def get(self, idx):
     return self.lights[self.lightsIdx[idx]]
@@ -234,7 +238,19 @@ class Flower(Lightable):
 ################################################################################
 
 def loadFlowers(fileName):
-  pass
+  try:
+    f = open(fileName, "r")
+    conf = yaml.load(f)
+    f.close()
+    for flower in conf["flowers"]:
+      x = flower.get("x", 0)
+      y = flower.get("y", 0)
+      h = flower.get("h", 0)
+      flowers.append(Flower(x, y, h))
+  except:
+    log("error loading flowers configuration file")
+    for i in range(N_FLOWERS):
+      flowers.append(Flower())
 
 ################################################################################
 
@@ -252,10 +268,9 @@ def constructPayload(flowers):
 ################################################################################
 
 def setup():
-  for i in range(N_FLOWERS):
-    flowers.append(Flower())
+  loadFlowers(FLOWERS_CONF)
 
-  effects.append(Circle(flowers[0:8], frames=FPS*1.5, trail=1, direction=-1, postFade=0.2, preFade=0))
+  effects.append(Circle(flowers[0:8], frames=FPS*.75, trail=1, direction=-1, postFade=0.2, preFade=0))
   effects.append(Circle(flowers[9:16], frames=FPS*2, trail=1.5, direction=1, postFade=0.2, preFade=0))
   effects.append(Full(flowers, HIGH/2))
 

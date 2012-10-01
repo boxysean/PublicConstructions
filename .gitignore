@@ -5,5 +5,7 @@ FlowerGardenModel/*.cbp
 FlowerGardenModel/*.layout
 FlowerGardenModel/*.workspace
 
+MasterControl/flowers.conf
+
 *.pyc
 
