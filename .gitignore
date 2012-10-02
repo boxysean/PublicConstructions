@@ -6,6 +6,7 @@ FlowerGardenModel/*.layout
 FlowerGardenModel/*.workspace
 
 MasterControl/flowers.conf
+MasterControl/scenes.conf
 
 *.pyc
 
