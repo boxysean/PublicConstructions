@@ -123,7 +123,51 @@ void Field::draw(){
 
 //--------------------------------------------------------------
 void Field::keyPressed(int key){
+    switch (key) {
+    case OF_KEY_LEFT:
+        flowers[selFlowerIdx]->x++;
+        break;
 
+    case OF_KEY_RIGHT:
+        flowers[selFlowerIdx]->x--;
+        break;
+
+    case OF_KEY_UP:
+        flowers[selFlowerIdx]->z--;
+        break;
+
+    case OF_KEY_DOWN:
+        flowers[selFlowerIdx]->z++;
+        break;
+
+    case ' ':
+        if (glutGetModifiers() & GLUT_ACTIVE_SHIFT) {
+            flowers[selFlowerIdx]->h--;
+        } else {
+            flowers[selFlowerIdx]->h++;
+        }
+
+    case '\t':
+        if (glutGetModifiers() & (GLUT_ACTIVE_CTRL | GLUT_ACTIVE_SHIFT)) {
+            selFlowerIdx--;
+        } else {
+            selFlowerIdx++;
+        }
+        if (selFlowerIdx < 0) {
+            selFlowerIdx += flowers.size();
+        } else if (selFlowerIdx >= flowers.size()) {
+            selFlowerIdx -= flowers.size();
+        }
+        break;
+
+    case 'r':
+        flowers[selFlowerIdx]->rotation--;
+        break;
+
+    case 'R':
+        flowers[selFlowerIdx]->rotation++;
+        break;
+    }
 }
 
 //--------------------------------------------------------------

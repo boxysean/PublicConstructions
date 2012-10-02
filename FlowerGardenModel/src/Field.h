@@ -5,6 +5,7 @@
 #include "ofMain.h"
 #include "lib/ofxNetwork/src/ofxNetwork.h"
 #include "yaml.h"
+#include <GL/glut.h>
 
 #include "Flower.h"
 
@@ -19,6 +20,7 @@ class Field : public ofBaseApp{
         ofEasyCam camera;
         int frameCount;
         ofxUDPManager udpConnection;
+        int selFlowerIdx;
 
 	public:
 		void setup();
