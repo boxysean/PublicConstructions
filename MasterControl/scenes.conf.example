@@ -1,0 +1,100 @@
+time: &TIME 1000
+
+scenes:
+ - name: "One at a time"
+   sequence:
+   - time: [*TIME, 0]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 0 }
+  
+   - time: [*TIME, 1]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 1 }
+  
+   - time: [*TIME, 2]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 2 }
+  
+   - time: [*TIME, 3]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 3 }
+  
+   - time: [*TIME, 4]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 4 }
+  
+   - time: [*TIME, 5]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 5 }
+  
+   - time: [*TIME, 6]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 6 }
+  
+   - time: [*TIME, 7]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 7 }
+  
+   - time: [*TIME, 8]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 8 }
+  
+   - time: [*TIME, 9]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 9 }
+  
+   - time: [*TIME, 10]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 10 }
+  
+   - time: [*TIME, 11]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 11 }
+  
+   - time: [*TIME, 12]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 12 }
+  
+   - time: [*TIME, 13]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 13 }
+  
+   - time: [*TIME, 14]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 14 }
+  
+   - time: [*TIME, 15]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 15 }

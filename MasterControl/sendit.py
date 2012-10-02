@@ -6,36 +6,43 @@ import yaml
 
 from math import ceil
 
-IPADDR = 'localhost'
-PORTNUM = 8080
-FPS = 32
-
 HIGH = 255
 LOW = 0
 
 N_FLOWERS = 16
 N_LIGHTS = 4
 
+DEFAULT_IP = "127.0.0.1"
+DEFAULT_PORT = 9930
+DEFAULT_FPS = 32
+
+DEFAULT_CONFIG_FILE = "flowers.conf"
+DEFAULT_SCENES_FILE = "scenes.conf"
+
+DEFAULT_SCENE_TIME = 10000
+DEFAULT_SCENE_DURATION = 10000
+
 BRIGHTNESS_CACHING = False
 
-MAX_FRAMES = FPS
-MAX_FRAMES = 4
 MAX_FRAMES = -1
+#MAX_FRAMES = 2
 
-FLOWERS_CONF = "flowers.conf"
-
-flowers = []
 effects = []
+flowers = []
+scenes = []
+sceneIdx = -1
 
+FPS = DEFAULT_FPS
 frameCount = 0
+currentTime = 0
+startTime = 0
 
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
-s.connect((IPADDR, PORTNUM))
+sock = None
 
 ################################################################################
 
-def log(msg):
-  print msg
+def log(*msg):
+  print " ".join([str(x) for x in msg])
 
 def rotate(l,n):
   return l[n:] + l[:n]
@@ -73,6 +80,7 @@ class Circle(Effect):
 
     self.curFrame = 0
 
+  def add(self):
     for flower in flowers:
       for light in flower.lights:
         light.register(self)
@@ -135,14 +143,14 @@ class Full(Effect):
   def __init__(self, objs, value=HIGH):
     self.objs = objs
     self.value = value
-    self.first = True
 
-    for obj in objs:
+  def add(self):
+    for obj in self.objs:
       obj.register(self)
-      obj.set(self, value)
+      obj.set(self, self.value)
 
   def remove(self):
-    for obj in objs:
+    for obj in self.objs:
       obj.deregister(self)
 
 ################################################################################
@@ -241,34 +249,149 @@ class Flower(Lightable):
     self.lightsIdx = rotate(self.lightsIdx, value)
 
   def reorderLightIdx(self, value):
-    print "before reorder", self.lights
     self.lightsIdx = [self.lightsIdx[idx] for idx in value]
-    print " after reorder", self.lights
 
 ################################################################################
 
-def loadFlowers(fileName):
-  try:
-    f = open(fileName, "r")
-    conf = yaml.load(f)
-    f.close()
-    for flower in conf["flowers"]:
-      x = flower.get("x", 0)
-      y = flower.get("y", 0)
-      h = flower.get("h", 0)
-      flowerObj = Flower(x, y, h)
+class Scene(object):
+  def __init__(self, name, sequences):
+    self.name = name
+    self.sequences = sequences
 
-      if "lightsIdx" in flower:
-        flowerObj.reorderLightIdx(flower["lightsIdx"])
+    log(name, sequences)
 
-      if "lightsRot" in flower:
-        flowerObj.rotateLightIdx(flower["lightsRot"])
+    self.duration = 0
 
-      flowers.append(flowerObj)
-  except Exception as e:
-    log("error loading flowers configuration file")
-    for i in range(N_FLOWERS):
-      flowers.append(Flower())
+    for sequence in sequences:
+      self.duration = max(self.duration, sequence.time + sequence.duration)
+
+################################################################################
+
+class Sequence(object):
+  def __init__(self, time, duration, effects):
+    self.time = time
+    self.duration = duration
+    self.effects = effects
+    self.invoked = False
+
+  def invoke(self):
+    global effects
+    self.invoked = True
+    for effect in self.effects:
+      effect.add()
+      effects.append(effect)
+
+  def revoke(self):
+    global effects
+    self.invoked = False
+    for effect in self.effects:
+      effect.remove()
+      effects.remove(effect)
+
+
+
+################################################################################
+
+def load(fileName):
+  global sock
+
+  f = open(fileName, "r")
+  conf = yaml.load(f)
+  f.close()
+
+  for flower in conf["flowers"]:
+    x = flower.get("x", 0)
+    y = flower.get("y", 0)
+    h = flower.get("h", 0)
+    flowerObj = Flower(x, y, h)
+
+    if "lightsIdx" in flower:
+      flowerObj.reorderLightIdx(flower["lightsIdx"])
+
+    if "lightsRot" in flower:
+      flowerObj.rotateLightIdx(flower["lightsRot"])
+
+    flowers.append(flowerObj)
+
+  settings = conf["settings"]
+
+  ip = settings.get("ip", DEFAULT_IP)
+  port = settings.get("port", DEFAULT_PORT)
+
+  log("connecting", ip, port)
+
+  sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
+  sock.connect((ip, port))
+
+  FPS = settings.get("fps", DEFAULT_FPS)
+
+################################################################################
+
+def getFlowerObjs(flowerIdx):
+  if isinstance(flowerIdx, int):
+    flowerIdx = [flowerIdx]
+
+  flowerObjs = []
+  for idx in flowerIdx:
+    flowerObjs.append(flowers[idx])
+
+  return flowerObjs
+
+################################################################################
+
+def getLightObjs(lightIdx):
+  if isinstance(lightIdx, int):
+    lightIdx = [lightIdx]
+
+  lightObjs = []
+  for idx in lightIdx:
+    lightObjs.append(flowers[idx/4].get(idx%4))
+
+  return lightObjs
+
+################################################################################
+
+def makeEffect(effect):
+  params = effect.get("params", {})
+  effectType = effect["type"]
+
+  if effectType == "Full":
+    value = params.get("value", HIGH)
+    lightObjs = getLightObjs(params.get("lightIdx", []))
+    flowerObjs = getFlowerObjs(params.get("flowerIdx", []))
+
+    return Full(lightObjs + flowerObjs, value = value)
+
+################################################################################
+
+def loadScenes(fileName):
+  global scenes
+
+  f = open(fileName, "r")
+  conf = yaml.load(f)
+  f.close()
+
+  for sceneIdx, scene in enumerate(conf["scenes"], 1):
+    name = scene.get("name", "Scene %d" % (sceneIdx))
+    sequences = []
+
+    for seqIdx, sequence in enumerate(scene.get("sequence", [])):
+      time = sequence.get("time", [DEFAULT_SCENE_TIME, seqIdx])
+
+      if isinstance(time, list):
+        time = time[0] * time[1]
+
+      duration = sequence.get("duration", DEFAULT_SCENE_DURATION)
+      effects = []
+
+      for effect in sequence.get("effects", []):
+        effectObj = makeEffect(effect)
+        effects.append(effectObj)
+
+      sequences.append(Sequence(time, duration, effects))
+     
+    sceneObj = Scene(name, sequences)
+    scenes.append(sceneObj)
 
 ################################################################################
 
@@ -284,15 +407,65 @@ def constructPayload(flowers):
 ################################################################################
 
 def setup():
-  loadFlowers(FLOWERS_CONF)
+  if len(sys.argv) > 1:
+    configFile = sys.argv[1]
+  else:
+    configFile = DEFAULT_CONFIG_FILE
 
-  effects.append(Circle(flowers[0:8], frames=FPS*.75, trail=1, direction=-1, postFade=0.2, preFade=0))
-  effects.append(Circle(flowers[9:16], frames=FPS*2, trail=1.5, direction=1, postFade=0.2, preFade=0))
-  effects.append(Full(flowers, HIGH/2))
+  scenesFile = DEFAULT_SCENES_FILE
+
+  load(configFile)
+  loadScenes(scenesFile)
+
+#  effects.append(Circle(flowers[0:8], frames=FPS*.75, trail=1, direction=-1, postFade=0.2, preFade=0))
+#  effects.append(Circle(flowers[9:16], frames=FPS*2, trail=1.5, direction=1, postFade=0.2, preFade=0))
+#  effects.append(Full(flowers, HIGH/2))
 
 ################################################################################
 
 def loop():
+  global sceneIdx, effects
+
+  time = (currentTime - startTime) * 1000
+
+  scene = scenes[sceneIdx] if sceneIdx >= 0 else None
+
+  if not scene:
+    sceneIdx = 0
+    scene = scenes[sceneIdx]
+    scene.startTime = 0
+
+    # add effects
+    for sequence in scene.sequences:
+      if sequence.time == 0:
+        sequence.invoke()
+  elif time >= scene.startTime + scene.duration:
+    # remove effects
+    for sequence in scene.sequences:
+      if sequence.invoked:
+        sequence.revoke()
+
+    # next scene
+    sceneIdx = sceneIdx+1
+    if sceneIdx >= len(scenes):
+      sceneIdx = sceneIdx - len(scenes)
+    scene = scenes[sceneIdx]
+    scene.startTime = time
+
+    # add effects
+    for sequence in scene.sequences:
+      if sequence.time == 0:
+        sequence.invoke()
+  else:
+    sceneTime = time - scene.startTime
+    for sequence in scene.sequences:
+      if sequence.invoked:
+        if sequence.time + sequence.duration < sceneTime:
+          sequence.revoke()
+      else:
+        if sequence.time <= sceneTime < sequence.time + sequence.duration:
+          sequence.invoke()
+
   for effect in effects:
     effect.next()
 
@@ -303,8 +476,8 @@ def loop():
 #  print ""
 
   payload = constructPayload(flowers)
-  print "payload %s" % (payload)
-  s.send(payload)
+  log("payload %s" % (payload))
+  sock.send(payload)
 
 ################################################################################
 
@@ -312,7 +485,7 @@ if __name__ == "__main__":
   setup()
 
   loopDelta = 1./FPS
-  currentTime = targetTime = time.time()
+  startTime = currentTime = targetTime = time.time()
 
   while MAX_FRAMES < 0 or frameCount < MAX_FRAMES:
     previousTime, currentTime = currentTime, time.time()
@@ -325,12 +498,12 @@ if __name__ == "__main__":
     targetTime += loopDelta
     sleepTime = targetTime - time.time()
     if sleepTime > 0:
-#      print "%.5f delta %.5f" % (sleepTime, loopDelta)
+      print "%.5f delta %.5f" % (sleepTime, loopDelta)
       time.sleep(sleepTime)
     else:
       print 'took too long'
 
     frameCount = frameCount + 1
 
-  s.close()
+  sock.close()
 
