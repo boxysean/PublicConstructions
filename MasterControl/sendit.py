@@ -19,6 +19,7 @@ N_LIGHTS = 4
 BRIGHTNESS_CACHING = False
 
 MAX_FRAMES = FPS
+MAX_FRAMES = 4
 MAX_FRAMES = -1
 
 FLOWERS_CONF = "flowers.conf"
@@ -35,6 +36,9 @@ s.connect((IPADDR, PORTNUM))
 
 def log(msg):
   print msg
+
+def rotate(l,n):
+  return l[n:] + l[:n]
 
 ################################################################################
 
@@ -207,8 +211,12 @@ class Light(Lightable):
 class Flower(Lightable):
   def __init__(self, x=0, y=0, h=0):
     super(Flower, self).__init__()
-    self.lights = [Light(self), Light(self), Light(self), Light(self)] # TRDL
-    self.lightsIdx = range(len(self.lights))
+    self.lights = []
+
+    for i in range(N_LIGHTS):
+      self.lights.append(Light(self))
+
+    self.lightsIdx = range(N_LIGHTS)
 
     self.x = x
     self.y = y
@@ -230,10 +238,12 @@ class Flower(Lightable):
     return self._lastBrightness
 
   def rotateLightIdx(self, value):
-    pass
+    self.lightsIdx = rotate(self.lightsIdx, value)
 
   def reorderLightIdx(self, value):
-    pass
+    print "before reorder", self.lights
+    self.lightsIdx = [self.lightsIdx[idx] for idx in value]
+    print " after reorder", self.lights
 
 ################################################################################
 
@@ -246,8 +256,16 @@ def loadFlowers(fileName):
       x = flower.get("x", 0)
       y = flower.get("y", 0)
       h = flower.get("h", 0)
-      flowers.append(Flower(x, y, h))
-  except:
+      flowerObj = Flower(x, y, h)
+
+      if "lightsIdx" in flower:
+        flowerObj.reorderLightIdx(flower["lightsIdx"])
+
+      if "lightsRot" in flower:
+        flowerObj.rotateLightIdx(flower["lightsRot"])
+
+      flowers.append(flowerObj)
+  except Exception as e:
     log("error loading flowers configuration file")
     for i in range(N_FLOWERS):
       flowers.append(Flower())
@@ -285,7 +303,7 @@ def loop():
 #  print ""
 
   payload = constructPayload(flowers)
-#  print payload
+  print "payload %s" % (payload)
   s.send(payload)
 
 ################################################################################

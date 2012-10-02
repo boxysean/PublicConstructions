@@ -146,6 +146,7 @@ void Field::keyPressed(int key){
         } else {
             flowers[selFlowerIdx]->h++;
         }
+        break;
 
     case '\t':
         if (glutGetModifiers() & (GLUT_ACTIVE_CTRL | GLUT_ACTIVE_SHIFT)) {
