@@ -17,19 +17,22 @@ DEFAULT_IP = "127.0.0.1"
 DEFAULT_PORT = 9930
 DEFAULT_FPS = 32
 
-DEFAULT_CONFIG_FILE = "flowers.conf"
+DEFAULT_CONFIG_FILE = "settings.conf"
+DEFAULT_FLOWERS_FILE = "flowers.conf"
 DEFAULT_SCENES_FILE = "scenes.conf"
 
 DEFAULT_SCENE_TIME = 10000
 DEFAULT_SCENE_DURATION = 10000
 
+MAX_FRAMES = -1
+
 BRIGHTNESS_CACHING = False
 
-MAX_FRAMES = -1
-#MAX_FRAMES = 2
+flowerShift = [ 4, 5, 6, 7, 0, 1, 2, 3, 12, 13, 14, 15, 8, 9, 10, 11 ]
+flowerRemapping = True
 
 effects = []
-flowers = []
+_flowers = []
 scenes = []
 sceneIdx = -1
 
@@ -47,6 +50,9 @@ def log(*msg):
 
 def rotate(l,n):
   return l[n:] + l[:n]
+
+def getFlower(idx):
+  return _flowers[idx]
 
 ################################################################################
 
@@ -187,7 +193,6 @@ class GlistenSingle(Effect):
 class Glisten(Effect):
   # fade, expected time on, expected time off
   def __init__(self, objs, brightness=HIGH, fadeOut=0.25, exp=1.0, expOn=-1, expOff=-1, frames=FPS):
-    print "fadeout is", fadeOut
     self.objs = objs
     self.brightness = brightness
     self.fadeOut = fadeOut
@@ -336,7 +341,10 @@ class Flower(Lightable):
     self.h = h
 
   def get(self, idx):
-    return self.lights[self.lightsIdx[idx]]
+    return self.lights[idx]
+
+  def getShift(self, idx):
+    return self.lightsIdx[idx]
 
   def getBrightness(self, frame=None):
     if BRIGHTNESS_CACHING and self._lastFrame == frame:
@@ -354,7 +362,7 @@ class Flower(Lightable):
     self.lightsIdx = rotate(self.lightsIdx, value)
 
   def reorderLightIdx(self, value):
-    self.lightsIdx = [self.lightsIdx[idx] for idx in value]
+    self.lightsIdx = value
 
 ################################################################################
 
@@ -362,8 +370,6 @@ class Scene(object):
   def __init__(self, name, sequences):
     self.name = name
     self.sequences = sequences
-
-    log(name, sequences)
 
     self.duration = 0
 
@@ -393,13 +399,37 @@ class Sequence(object):
       effect.remove()
       effects.remove(effect)
 
-
-
 ################################################################################
 
 def load(fileName):
   global sock
+  global flowerRemapping
 
+  f = open(fileName, "r")
+  conf = yaml.load(f)
+  f.close()
+
+  settings = conf["settings"]
+
+  ip = settings.get("ip", DEFAULT_IP)
+  port = settings.get("port", DEFAULT_PORT)
+
+  log("connecting", ip, port)
+
+  sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
+  sock.connect((ip, port))
+
+  FPS = settings.get("fps", DEFAULT_FPS)
+
+  MAX_FRAMES = settings.get("maxFrames", -1)
+  flowerRemapping = settings.get("flowerRemapping", True)
+
+  loadFlowers(settings.get("flowerConf", DEFAULT_FLOWERS_FILE))
+  loadScenes(settings.get("scenesConf", DEFAULT_SCENES_FILE))
+
+################################################################################
+
+def loadFlowers(fileName):
   f = open(fileName, "r")
   conf = yaml.load(f)
   f.close()
@@ -416,19 +446,38 @@ def load(fileName):
     if "lightsRot" in flower:
       flowerObj.rotateLightIdx(flower["lightsRot"])
 
-    flowers.append(flowerObj)
+    _flowers.append(flowerObj)
 
-  settings = conf["settings"]
+################################################################################
 
-  ip = settings.get("ip", DEFAULT_IP)
-  port = settings.get("port", DEFAULT_PORT)
+def loadScenes(fileName):
+  global scenes
 
-  log("connecting", ip, port)
+  f = open(fileName, "r")
+  conf = yaml.load(f)
+  f.close()
 
-  sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
-  sock.connect((ip, port))
+  for sceneIdx, scene in enumerate(conf["scenes"], 1):
+    name = scene.get("name", "Scene %d" % (sceneIdx))
+    sequences = []
 
-  FPS = settings.get("fps", DEFAULT_FPS)
+    for seqIdx, sequence in enumerate(scene.get("sequence", [])):
+      time = sequence.get("time", [DEFAULT_SCENE_TIME, seqIdx])
+
+      if isinstance(time, list):
+        time = time[0] * time[1]
+
+      duration = sequence.get("duration", DEFAULT_SCENE_DURATION)
+      effects = []
+
+      for effect in sequence.get("effects", []):
+        effectObj = makeEffect(effect)
+        effects.append(effectObj)
+
+      sequences.append(Sequence(time, duration, effects))
+     
+    sceneObj = Scene(name, sequences)
+    scenes.append(sceneObj)
 
 ################################################################################
 
@@ -438,7 +487,7 @@ def getFlowerObjs(flowerIdx):
 
   flowerObjs = []
   for idx in flowerIdx:
-    flowerObjs.append(flowers[idx])
+    flowerObjs.append(getFlower(idx))
 
   return flowerObjs
 
@@ -451,9 +500,9 @@ def getLightObjs(lightIdx):
   lightObjs = []
   for idx in lightIdx:
     if isinstance(idx, list):
-      lightObjs.append(flowers[idx[0]].get(idx[1]))
+      lightObjs.append(getFlower(idx[0]).get(idx[1]))
     else:
-      lightObjs.append(flowers[idx/4].get(idx%4))
+      lightObjs.append(getFlower(idx/4).get(idx%4))
 
   return lightObjs
 
@@ -515,43 +564,22 @@ def makeEffect(effect):
 
 ################################################################################
 
-def loadScenes(fileName):
-  global scenes
+def constructPayload(withShift=True):
+  lights = [0 for i in range(N_FLOWERS * N_LIGHTS)]
 
-  f = open(fileName, "r")
-  conf = yaml.load(f)
-  f.close()
-
-  for sceneIdx, scene in enumerate(conf["scenes"], 1):
-    name = scene.get("name", "Scene %d" % (sceneIdx))
-    sequences = []
-
-    for seqIdx, sequence in enumerate(scene.get("sequence", [])):
-      time = sequence.get("time", [DEFAULT_SCENE_TIME, seqIdx])
-
-      if isinstance(time, list):
-        time = time[0] * time[1]
-
-      duration = sequence.get("duration", DEFAULT_SCENE_DURATION)
-      effects = []
-
-      for effect in sequence.get("effects", []):
-        effectObj = makeEffect(effect)
-        effects.append(effectObj)
-
-      sequences.append(Sequence(time, duration, effects))
-     
-    sceneObj = Scene(name, sequences)
-    scenes.append(sceneObj)
-
-################################################################################
-
-def constructPayload(flowers):
-  res = "%3d " % (len(flowers)*N_LIGHTS)
-
-  for flower in flowers:
+  for i in range(len(_flowers)):
+    flower = getFlower(i)
+    shift = flowerShift[i]
     for idx in range(len(flower.lights)):
-      res += "%3d " % (min(max(flower.lights[idx].getBrightness(frameCount), 0), 255))
+      if withShift:
+        lights[4*shift + flower.getShift(idx)] = min(max(flower.get(idx).getBrightness(frameCount), 0), 255)
+      else:
+        lights[4*i + idx] = min(max(flower.get(idx).getBrightness(frameCount), 0), 255)
+
+  res = "%3d " % (N_FLOWERS * N_LIGHTS)
+
+  for x in lights:
+    res += "%3d " % (x)
 
   return res
 
@@ -563,13 +591,16 @@ def setup():
   else:
     configFile = DEFAULT_CONFIG_FILE
 
+
   scenesFile = DEFAULT_SCENES_FILE
   scenesFile = "scenes/fadeAll.conf"
   scenesFile = "scenes/circleAll.conf"
-  scenesFile = "scenes/erraticAll.conf"
+#  scenesFile = "scenes/erraticAll.conf"
+  scenesFile = "scenes/circleOne.conf"
+#  scenesFile = "scenes/fullStepThrough.conf"
+#  scenesFile = "scenes/twoStepThrough.conf"
 
   load(configFile)
-  loadScenes(scenesFile)
 
 ################################################################################
 
@@ -625,7 +656,7 @@ def loop():
 #      sys.stdout.write("%3d " % flower.get(i).getBrightness())
 #  print ""
 
-  payload = constructPayload(flowers)
+  payload = constructPayload(flowerRemapping)
   log("payload %s" % (payload))
   sock.send(payload)
 
@@ -648,7 +679,7 @@ if __name__ == "__main__":
     targetTime += loopDelta
     sleepTime = targetTime - time.time()
     if sleepTime > 0:
-      print "%.5f delta %.5f" % (sleepTime, loopDelta)
+    #  print "%.5f delta %.5f" % (sleepTime, loopDelta)
       time.sleep(sleepTime)
     else:
       print 'took too long'

@@ -67,7 +67,7 @@ void Field::setup(){
     glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
 
     udpConnection.Create();
-    udpConnection.Bind(8080);
+    udpConnection.Bind(9930);
     udpConnection.SetNonBlocking(true);
 }
 
@@ -109,7 +109,7 @@ void Field::draw(){
     camera.begin();
 
     ofRotateZ(180);
-    ofTranslate(0, ofGetHeight() / 6, 0);
+    ofTranslate(0, ofGetHeight() / 6, -200);
 
     drawGrass();
 

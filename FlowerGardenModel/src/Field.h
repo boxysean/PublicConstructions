@@ -9,8 +9,8 @@
 
 #include "Flower.h"
 
-#define FIELD_LENGTH 200
-#define FIELD_WIDTH 200
+#define FIELD_LENGTH 700
+#define FIELD_WIDTH 250
 
 #define FLOWERS_CONF "/home/boxysean/workspace/PublicConstructions/MasterControl/flowers.conf"
 
