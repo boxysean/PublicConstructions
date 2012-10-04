@@ -27,6 +27,90 @@ flowers:
    lightsIdx: [0, 1, 2, 3]
    lightsRot: 0
 
+ - x: -200
+   y: 0
+   h: 100
+   rotation: 0
+   lightsIdx: [0, 1, 2, 3]
+   lightsRot: 0
+
+ - x: -200
+   y: 0
+   h: 100
+   rotation: 0
+   lightsIdx: [0, 1, 2, 3]
+   lightsRot: 0
+
+ - x: -200
+   y: 0
+   h: 100
+   rotation: 0
+   lightsIdx: [0, 1, 2, 3]
+   lightsRot: 0
+
+ - x: -200
+   y: 0
+   h: 100
+   rotation: 0
+   lightsIdx: [0, 1, 2, 3]
+   lightsRot: 0
+
+ - x: -200
+   y: 0
+   h: 100
+   rotation: 0
+   lightsIdx: [0, 1, 2, 3]
+   lightsRot: 0
+
+ - x: -200
+   y: 0
+   h: 100
+   rotation: 0
+   lightsIdx: [0, 1, 2, 3]
+   lightsRot: 0
+
+ - x: -200
+   y: 0
+   h: 100
+   rotation: 0
+   lightsIdx: [0, 1, 2, 3]
+   lightsRot: 0
+
+ - x: -200
+   y: 0
+   h: 100
+   rotation: 0
+   lightsIdx: [0, 1, 2, 3]
+   lightsRot: 0
+
+ - x: -200
+   y: 0
+   h: 100
+   rotation: 0
+   lightsIdx: [0, 1, 2, 3]
+   lightsRot: 0
+
+ - x: -200
+   y: 0
+   h: 100
+   rotation: 0
+   lightsIdx: [0, 1, 2, 3]
+   lightsRot: 0
+
+ - x: -200
+   y: 0
+   h: 100
+   rotation: 0
+   lightsIdx: [0, 1, 2, 3]
+   lightsRot: 0
+
+ - x: -200
+   y: 0
+   h: 100
+   rotation: 0
+   lightsIdx: [0, 1, 2, 3]
+   lightsRot: 0
+
 settings:
   ip: "localhost"
   port: 8080

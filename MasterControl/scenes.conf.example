@@ -8,93 +8,383 @@ scenes:
      effects:
       - type: Full
         params: { value: 255, lightIdx: 0 }
-  
+
    - time: [*TIME, 1]
      duration: *TIME
      effects:
       - type: Full
         params: { value: 255, lightIdx: 1 }
-  
+
    - time: [*TIME, 2]
      duration: *TIME
      effects:
       - type: Full
         params: { value: 255, lightIdx: 2 }
-  
+
    - time: [*TIME, 3]
      duration: *TIME
      effects:
       - type: Full
         params: { value: 255, lightIdx: 3 }
-  
+
    - time: [*TIME, 4]
      duration: *TIME
      effects:
       - type: Full
         params: { value: 255, lightIdx: 4 }
-  
+
    - time: [*TIME, 5]
      duration: *TIME
      effects:
       - type: Full
         params: { value: 255, lightIdx: 5 }
-  
+
    - time: [*TIME, 6]
      duration: *TIME
      effects:
       - type: Full
         params: { value: 255, lightIdx: 6 }
-  
+
    - time: [*TIME, 7]
      duration: *TIME
      effects:
       - type: Full
         params: { value: 255, lightIdx: 7 }
-  
+
    - time: [*TIME, 8]
      duration: *TIME
      effects:
       - type: Full
         params: { value: 255, lightIdx: 8 }
-  
+
    - time: [*TIME, 9]
      duration: *TIME
      effects:
       - type: Full
         params: { value: 255, lightIdx: 9 }
-  
+
    - time: [*TIME, 10]
      duration: *TIME
      effects:
       - type: Full
         params: { value: 255, lightIdx: 10 }
-  
+
    - time: [*TIME, 11]
      duration: *TIME
      effects:
       - type: Full
         params: { value: 255, lightIdx: 11 }
-  
+
    - time: [*TIME, 12]
      duration: *TIME
      effects:
       - type: Full
         params: { value: 255, lightIdx: 12 }
-  
+
    - time: [*TIME, 13]
      duration: *TIME
      effects:
       - type: Full
         params: { value: 255, lightIdx: 13 }
-  
+
    - time: [*TIME, 14]
      duration: *TIME
      effects:
       - type: Full
         params: { value: 255, lightIdx: 14 }
-  
+
    - time: [*TIME, 15]
      duration: *TIME
      effects:
       - type: Full
         params: { value: 255, lightIdx: 15 }
+
+   - time: [*TIME, 16]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 16 }
+
+   - time: [*TIME, 17]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 17 }
+
+   - time: [*TIME, 18]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 18 }
+
+   - time: [*TIME, 19]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 19 }
+
+   - time: [*TIME, 20]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 20 }
+
+   - time: [*TIME, 21]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 21 }
+
+   - time: [*TIME, 22]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 22 }
+
+   - time: [*TIME, 23]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 23 }
+
+   - time: [*TIME, 24]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 24 }
+
+   - time: [*TIME, 25]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 25 }
+
+   - time: [*TIME, 26]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 26 }
+
+   - time: [*TIME, 27]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 27 }
+
+   - time: [*TIME, 28]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 28 }
+
+   - time: [*TIME, 29]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 29 }
+
+   - time: [*TIME, 30]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 30 }
+
+   - time: [*TIME, 31]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 31 }
+
+   - time: [*TIME, 32]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 32 }
+
+   - time: [*TIME, 33]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 33 }
+
+   - time: [*TIME, 34]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 34 }
+
+   - time: [*TIME, 35]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 35 }
+
+   - time: [*TIME, 36]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 36 }
+
+   - time: [*TIME, 37]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 37 }
+
+   - time: [*TIME, 38]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 38 }
+
+   - time: [*TIME, 39]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 39 }
+
+   - time: [*TIME, 40]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 40 }
+
+   - time: [*TIME, 41]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 41 }
+
+   - time: [*TIME, 42]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 42 }
+
+   - time: [*TIME, 43]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 43 }
+
+   - time: [*TIME, 44]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 44 }
+
+   - time: [*TIME, 45]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 45 }
+
+   - time: [*TIME, 46]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 46 }
+
+   - time: [*TIME, 47]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 47 }
+
+   - time: [*TIME, 48]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 48 }
+
+   - time: [*TIME, 49]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 49 }
+
+   - time: [*TIME, 50]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 50 }
+
+   - time: [*TIME, 51]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 51 }
+
+   - time: [*TIME, 52]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 52 }
+
+   - time: [*TIME, 53]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 53 }
+
+   - time: [*TIME, 54]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 54 }
+
+   - time: [*TIME, 55]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 55 }
+
+   - time: [*TIME, 56]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 56 }
+
+   - time: [*TIME, 57]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 57 }
+
+   - time: [*TIME, 58]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 58 }
+
+   - time: [*TIME, 59]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 59 }
+
+   - time: [*TIME, 60]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 60 }
+
+   - time: [*TIME, 61]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 61 }
+
+   - time: [*TIME, 62]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 62 }
+
+   - time: [*TIME, 63]
+     duration: *TIME
+     effects:
+      - type: Full
+        params: { value: 255, lightIdx: 63 }
+
+

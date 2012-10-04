@@ -3,6 +3,7 @@ import time
 import random
 import sys
 import yaml
+import argparse
 
 from math import ceil
 
@@ -50,6 +51,14 @@ def rotate(l,n):
 ################################################################################
 
 class Effect(object):
+  def add(self):
+    for obj in self.objs:
+      obj.register(self)
+
+  def remove(self):
+    for obj in self.objs:
+      obj.deregister(self)
+
   def next(self):
     pass
 
@@ -81,13 +90,13 @@ class Circle(Effect):
     self.curFrame = 0
 
   def add(self):
-    for flower in flowers:
+    for flower in self.flowers:
       for light in flower.lights:
         light.register(self)
 
   def remove(self):
-    for flower in flowers:
-      for light in lights:
+    for flower in self.flowers:
+      for light in flower.lights:
         light.deregister(self)
 
   # TODO you can make this much more efficient...
@@ -149,23 +158,119 @@ class Full(Effect):
       obj.register(self)
       obj.set(self, self.value)
 
-  def remove(self):
-    for obj in self.objs:
-      obj.deregister(self)
-
 ################################################################################
 
-class Erratic(Effect):
-  pass
+class GlistenSingle(Effect):
+  def __init__(self, obj, fadeOut=0.25, frames=FPS):
+    self.obj = obj
+    self.fadeOut = fadeOut
+    self.frames = frames
 
-def erratic(repeat):
-  for q in range(repeat):
-    full(255 if q % 2 else 0, random.expovariate(10.0))
+    self.value = 0
+    self.maxValue = 0
+
+  def add(self):
+    pass
+
+  def remove(self):
+    pass
+
+  def next(self):
+    self.obj.set(self, self.value)
+    if self.fadeOut > 0:
+      self.value = self.value - (float(self.maxValue) / (self.frames * self.fadeOut))
+
+  def setBrightness(self, value):
+    self.value = value
+    self.maxValue = value
+
+class Glisten(Effect):
+  # fade, expected time on, expected time off
+  def __init__(self, objs, brightness=HIGH, fadeOut=0.25, exp=1.0, expOn=-1, expOff=-1, frames=FPS):
+    print "fadeout is", fadeOut
+    self.objs = objs
+    self.brightness = brightness
+    self.fadeOut = fadeOut
+
+    if expOn >= 0:
+      self.expOn = expOn
+    else:
+      self.expOn = exp
+
+    if expOff >= 0:
+      self.expOff = expOff
+    else:
+      self.expOff = exp
+
+    self.frames = frames
+
+    self.curState = {}
+    self.singles = {}
+    self.ison = {}
+
+    for obj in objs:
+      self.curState[obj] = 0
+      self.singles[obj] = GlistenSingle(obj, fadeOut=fadeOut, frames=frames)
+      self.ison[obj] = random.choice([True, False])
+
+  def add(self):
+    for obj in self.objs:
+      single = self.singles[obj]
+      obj.register(single)
+
+  def remove(self):
+    for obj in self.objs:
+      single = self.singles[obj]
+      obj.deregister(single)
+
+  def randomFrames(self, variable):
+    return int(random.expovariate(variable) * self.frames)
+
+  def next(self):
+    for obj in self.objs:
+      state = self.curState[obj]
+      single = self.singles[obj]
+
+      if state == 0:
+        ison = self.ison[obj]
+        if ison:
+          if self.fadeOut == 0:
+            single.setBrightness(LOW)
+          frames = self.randomFrames(self.expOff)
+          self.curState[obj] = frames
+        else:
+          single.setBrightness(self.brightness)
+          frames = self.randomFrames(self.expOn)
+          self.curState[obj] = frames
+
+        self.ison[obj] = not ison
+      else:
+        self.curState[obj] = state-1
+
+      single.next()
 
 ################################################################################
 
 class Fade(Effect):
-  pass
+  def __init__(self, objs, frames=FPS, brightness=HIGH):
+    self.objs = objs
+    self.frames = frames
+    self.brightness = brightness
+
+    self.curFrame = 0
+
+  def next(self):
+    if self.curFrame < self.frames/2:
+      curBrightness = int(float(self.curFrame) / self.frames * self.brightness * 2)
+    else:
+      curBrightness = int(float(self.frames - self.curFrame) / self.frames * self.brightness * 2)
+      
+    for obj in self.objs:
+      obj.set(self, curBrightness)
+
+    self.curFrame = self.curFrame + 1
+    if self.curFrame >= self.frames:
+      self.curFrame = self.curFrame - self.frames
 
 ################################################################################
 
@@ -345,7 +450,10 @@ def getLightObjs(lightIdx):
 
   lightObjs = []
   for idx in lightIdx:
-    lightObjs.append(flowers[idx/4].get(idx%4))
+    if isinstance(idx, list):
+      lightObjs.append(flowers[idx[0]].get(idx[1]))
+    else:
+      lightObjs.append(flowers[idx/4].get(idx%4))
 
   return lightObjs
 
@@ -359,8 +467,51 @@ def makeEffect(effect):
     value = params.get("value", HIGH)
     lightObjs = getLightObjs(params.get("lightIdx", []))
     flowerObjs = getFlowerObjs(params.get("flowerIdx", []))
-
     return Full(lightObjs + flowerObjs, value = value)
+
+  elif effectType == "Fade":
+    brightness = params.get("brightness", HIGH)
+
+    if "time" in params:
+      frames = int(params["time"] / 1000.0 * FPS)
+    else:
+      frames = params.get("frames", FPS)
+
+    lightObjs = getLightObjs(params.get("lightIdx", []))
+    flowerObjs = getFlowerObjs(params.get("flowerIdx", []))
+    return Fade(lightObjs + flowerObjs, brightness=brightness, frames=frames)
+
+  elif effectType == "Circle":
+    flowerObjs = getFlowerObjs(params.get("flowerIdx", []))
+
+    if "time" in params:
+      frames = int(params["time"]  / 1000.0 * FPS)
+    else:
+      frames = params.get("frames", FPS)
+
+    direction = params.get("direction", 1)
+    trail = params.get("trail", 2)
+    brightness = params.get("brightness", HIGH)
+    postFade = params.get("postFade", 0.25)
+    preFade = params.get("preFade", 0.2)
+
+    return Circle(flowers=flowerObjs, frames=frames, direction=direction, trail=trail, brightness=brightness, postFade=postFade, preFade=preFade)
+
+  elif effectType == "Glisten":
+    flowerObjs = getFlowerObjs(params.get("flowerIdx", []))
+    lightObjs = getLightObjs(params.get("lightIdx", []))
+    brightness = params.get("brightness", HIGH)
+    fadeOut = params.get("fadeOut", 0.25)
+    exp = params.get("exp", 1.0)
+    expOn = params.get("expOn", -1)
+    expOff = params.get("expOff", -1)
+
+    if "time" in params:
+      frames = int(params["time"]  / 1000.0 * FPS)
+    else:
+      frames = params.get("frames", FPS)
+
+    return Glisten(flowerObjs + lightObjs, brightness=brightness, fadeOut=fadeOut, exp=exp, expOn=expOn, expOff=expOff, frames=frames)
 
 ################################################################################
 
@@ -413,13 +564,12 @@ def setup():
     configFile = DEFAULT_CONFIG_FILE
 
   scenesFile = DEFAULT_SCENES_FILE
+  scenesFile = "scenes/fadeAll.conf"
+  scenesFile = "scenes/circleAll.conf"
+  scenesFile = "scenes/erraticAll.conf"
 
   load(configFile)
   loadScenes(scenesFile)
-
-#  effects.append(Circle(flowers[0:8], frames=FPS*.75, trail=1, direction=-1, postFade=0.2, preFade=0))
-#  effects.append(Circle(flowers[9:16], frames=FPS*2, trail=1.5, direction=1, postFade=0.2, preFade=0))
-#  effects.append(Full(flowers, HIGH/2))
 
 ################################################################################
 
