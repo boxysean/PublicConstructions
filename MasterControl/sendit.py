@@ -29,6 +29,9 @@ MAX_FRAMES = -1
 
 BRIGHTNESS_CACHING = False
 
+DEFAULT_OUTPUT_MODE = "network"
+DEFAULT_RENDER_FILE = "render.out"
+
 flowerShift = [ 4, 5, 6, 7, 0, 1, 2, 3, 12, 13, 14, 15, 8, 9, 10, 11 ]
 flowerRemapping = True
 
@@ -42,7 +45,9 @@ frameCount = 0
 currentTime = 0
 startTime = 0
 
+outputMode = DEFAULT_OUTPUT_MODE
 sock = None
+renderFile = None
 
 ################################################################################
 
@@ -405,6 +410,8 @@ class Sequence(object):
 def load(fileName, flowerFile=None, sceneFile=None):
   global sock
   global flowerRemapping
+  global renderFile
+  global outputMode
 
   f = open(fileName, "r")
   conf = yaml.load(f)
@@ -412,28 +419,36 @@ def load(fileName, flowerFile=None, sceneFile=None):
 
   settings = conf["settings"]
 
-  ip = settings.get("ip", DEFAULT_IP)
-  port = settings.get("port", DEFAULT_PORT)
-
-  log("connecting", ip, port)
-
-  sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
-  sock.connect((ip, port))
+  outputMode = settings.get("outputMode", DEFAULT_OUTPUT_MODE)
 
   FPS = settings.get("fps", DEFAULT_FPS)
+
+  if outputMode == "network":
+    ip = settings.get("ip", DEFAULT_IP)
+    port = settings.get("port", DEFAULT_PORT)
+    log("connecting", ip, port)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
+    sock.connect((ip, port))
+  elif outputMode == "render":
+    renderFileName = settings.get("renderFile", DEFAULT_RENDER_FILE)
+    renderFile = open(renderFileName, "w")
+    log("rendering to", renderFile)
+#    renderFile.write(FPS)
+    renderFile.write("%d" % FPS)
+    renderFile.write("\n")
 
   MAX_FRAMES = settings.get("maxFrames", -1)
   flowerRemapping = settings.get("flowerRemapping", True)
 
-  if flowerFile:
-    loadFlowers(flowerFile)
-  else:
-    loadFlowers(settings.get("flowerConf", DEFAULT_FLOWERS_FILE))
+  if not flowerFile:
+    flowerFile = settings.get("flowerConf", DEFAULT_FLOWERS_FILE)
+  loadFlowers(flowerFile)
 
-  if sceneFile:
-    loadScenes(sceneFile)
-  else:
-    loadScenes(settings.get("scenesConf", DEFAULT_SCENES_FILE))
+  if not sceneFile:
+    sceneFile = settings.get("scenesConf", DEFAULT_SCENES_FILE)
+  loadScenes(sceneFile)
+
+  log("using settings %s flowers %s scenes %s" % (fileName, flowerFile, sceneFile))
 
 ################################################################################
 
@@ -593,6 +608,16 @@ def constructPayload(withShift=True):
 
 ################################################################################
 
+def output(s):
+  global outputMode, sock
+  if outputMode == "network":
+    sock.send(s)
+  elif outputMode == "render":
+    renderFile.write(s)
+    renderFile.write('\n')
+
+################################################################################
+
 def setup():
   if len(sys.argv) > 1 and os.path.isfile(sys.argv[1]):
     configFile = sys.argv[1]
@@ -667,7 +692,7 @@ def loop():
 
   payload = constructPayload(flowerRemapping)
   log("payload %s" % (payload))
-  sock.send(payload)
+  output(payload)
 
 ################################################################################
 
@@ -695,5 +720,8 @@ if __name__ == "__main__":
 
     frameCount = frameCount + 1
 
-  sock.close()
+  if outputMode == "network":
+    sock.close()
+  elif outputMode == "render":
+    renderFile.close()
 
