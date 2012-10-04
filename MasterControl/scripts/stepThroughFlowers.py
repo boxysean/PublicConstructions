@@ -10,6 +10,9 @@ from math import ceil
 N_FLOWERS = 16
 N_LIGHTS = 4
 
+IP = "127.0.0.1"
+PORT = 9930
+
 def constructPayload(xx):
   res = "%3d " % (N_FLOWERS * N_LIGHTS)
 
@@ -23,14 +26,20 @@ def constructPayload(xx):
 
 channel = 0
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
-sock.connect(("192.168.2.103", 9930))
+sock.connect((IP, PORT))
 
 for i in range(16):
   payload = constructPayload(channel)
   print "payload %s" % (payload)
   sock.send(payload)
-  raw_input("Channel %d: Press Enter to continue..." % (channel))
-  channel = channel + 1
+  inx = raw_input("Channel %d: Press Enter to continue..." % (channel))
+  if len(inx):
+    try:
+      channel = int(inx)
+    except:
+      channel = channel - 1
+  else:
+    channel = channel + 1
 
 sock.close()
 

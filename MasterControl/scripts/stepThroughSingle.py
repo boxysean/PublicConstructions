@@ -34,7 +34,10 @@ def loop():
     sock.send(payload)
     inx = raw_input("Channel %d: Press Enter to continue..." % (channel))
     if len(inx):
-      channel = int(inx)
+      try:
+        channel = int(inx)
+      except:
+        channel = channel - 1
     else:
       channel = channel + 1
 
