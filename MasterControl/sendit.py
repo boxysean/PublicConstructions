@@ -4,6 +4,7 @@ import random
 import sys
 import yaml
 import argparse
+import os
 
 from math import ceil
 
@@ -401,7 +402,7 @@ class Sequence(object):
 
 ################################################################################
 
-def load(fileName):
+def load(fileName, flowerFile=None, sceneFile=None):
   global sock
   global flowerRemapping
 
@@ -424,8 +425,15 @@ def load(fileName):
   MAX_FRAMES = settings.get("maxFrames", -1)
   flowerRemapping = settings.get("flowerRemapping", True)
 
-  loadFlowers(settings.get("flowerConf", DEFAULT_FLOWERS_FILE))
-  loadScenes(settings.get("scenesConf", DEFAULT_SCENES_FILE))
+  if flowerFile:
+    loadFlowers(flowerFile)
+  else:
+    loadFlowers(settings.get("flowerConf", DEFAULT_FLOWERS_FILE))
+
+  if sceneFile:
+    loadScenes(sceneFile)
+  else:
+    loadScenes(settings.get("scenesConf", DEFAULT_SCENES_FILE))
 
 ################################################################################
 
@@ -586,21 +594,22 @@ def constructPayload(withShift=True):
 ################################################################################
 
 def setup():
-  if len(sys.argv) > 1:
+  if len(sys.argv) > 1 and os.path.isfile(sys.argv[1]):
     configFile = sys.argv[1]
   else:
     configFile = DEFAULT_CONFIG_FILE
 
+  if len(sys.argv) > 2 and os.path.isfile(sys.argv[2]):
+    flowerFile = sys.argv[2]
+  else:
+    flowerFile = None
 
-  scenesFile = DEFAULT_SCENES_FILE
-  scenesFile = "scenes/fadeAll.conf"
-  scenesFile = "scenes/circleAll.conf"
-#  scenesFile = "scenes/erraticAll.conf"
-  scenesFile = "scenes/circleOne.conf"
-#  scenesFile = "scenes/fullStepThrough.conf"
-#  scenesFile = "scenes/twoStepThrough.conf"
+  if len(sys.argv) > 3 and os.path.isfile(sys.argv[3]):
+    sceneFile = sys.argv[3]
+  else:
+    sceneFile = None
 
-  load(configFile)
+  load(configFile, flowerFile, sceneFile)
 
 ################################################################################
 
