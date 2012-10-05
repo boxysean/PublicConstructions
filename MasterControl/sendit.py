@@ -29,6 +29,9 @@ MAX_FRAMES = -1
 
 BRIGHTNESS_CACHING = False
 
+DEFAULT_INPUT_MODE = "scene"
+DEFAULT_PLAYBACK_FILE = "render.out"
+
 DEFAULT_OUTPUT_MODE = "network"
 DEFAULT_RENDER_FILE = "render.out"
 
@@ -44,6 +47,10 @@ FPS = DEFAULT_FPS
 frameCount = 0
 currentTime = 0
 startTime = 0
+
+inputMode = DEFAULT_INPUT_MODE
+playbackFile = None
+playbackIdx = 0
 
 outputMode = DEFAULT_OUTPUT_MODE
 sock = None
@@ -410,8 +417,12 @@ class Sequence(object):
 def load(fileName, flowerFile=None, sceneFile=None):
   global sock
   global flowerRemapping
-  global renderFile
   global outputMode
+  global renderFile
+  global inputMode
+  global playbackFile
+
+  log("[SETTINGS]", fileName)
 
   f = open(fileName, "r")
   conf = yaml.load(f)
@@ -419,36 +430,47 @@ def load(fileName, flowerFile=None, sceneFile=None):
 
   settings = conf["settings"]
 
-  outputMode = settings.get("outputMode", DEFAULT_OUTPUT_MODE)
-
   FPS = settings.get("fps", DEFAULT_FPS)
+
+  inputMode = settings.get("inputMode", DEFAULT_INPUT_MODE)
+
+  if inputMode == "scene":
+    log("[INPUT] scenes from file")
+  elif inputMode == "playback":
+    playbackFileName = settings.get("playbackFile", DEFAULT_PLAYBACK_FILE)
+    playbackFile = open(playbackFileName, "r")
+    log("[INPUT] playback from", playbackFileName)
+  else:
+    log("unknown input mode")
+
+  outputMode = settings.get("outputMode", DEFAULT_OUTPUT_MODE)
 
   if outputMode == "network":
     ip = settings.get("ip", DEFAULT_IP)
     port = settings.get("port", DEFAULT_PORT)
-    log("connecting", ip, port)
+    log("[OUTPUT] connecting to", ip, port)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
     sock.connect((ip, port))
   elif outputMode == "render":
     renderFileName = settings.get("renderFile", DEFAULT_RENDER_FILE)
     renderFile = open(renderFileName, "w")
-    log("rendering to", renderFile)
-#    renderFile.write(FPS)
-    renderFile.write("%d" % FPS)
-    renderFile.write("\n")
+    log("[OUTPUT] rendering to", renderFileName)
+  else:
+    log("unknown output mode")
 
   MAX_FRAMES = settings.get("maxFrames", -1)
   flowerRemapping = settings.get("flowerRemapping", True)
 
-  if not flowerFile:
-    flowerFile = settings.get("flowerConf", DEFAULT_FLOWERS_FILE)
-  loadFlowers(flowerFile)
+  if inputMode == "scene":
+    if not flowerFile:
+      flowerFile = settings.get("flowerConf", DEFAULT_FLOWERS_FILE)
+    log("[FLOWERS]", flowerFile)
+    loadFlowers(flowerFile)
 
-  if not sceneFile:
-    sceneFile = settings.get("scenesConf", DEFAULT_SCENES_FILE)
-  loadScenes(sceneFile)
-
-  log("using settings %s flowers %s scenes %s" % (fileName, flowerFile, sceneFile))
+    if not sceneFile:
+      sceneFile = settings.get("scenesConf", DEFAULT_SCENES_FILE)
+    log("[SCENE]", sceneFile)
+    loadScenes(sceneFile)
 
 ################################################################################
 
@@ -640,6 +662,17 @@ def setup():
 
 def loop():
   global sceneIdx, effects
+
+  if inputMode == "playback":
+    payload = playbackFile.readline()
+    if len(payload) == 0:
+      playbackFile.seek(0)
+      payload = playbackFile.readline()
+    if payload[-1] == "\n":
+      payload = payload[:-1]
+    print "playback payload", payload
+    output(payload)
+    return
 
   time = (currentTime - startTime) * 1000
 
