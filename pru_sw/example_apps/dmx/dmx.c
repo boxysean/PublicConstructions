@@ -39,7 +39,7 @@
 #define DMX_PIN_ADDR (0x102)
 
 #define UDP_PORT (9930)
-#define UDP_BUFLEN (512)
+#define UDP_BUFLEN (1024*64)
 
 #define AM33XX
 
@@ -247,14 +247,16 @@ static void LOCAL_udp_listen () {
 			diep("recvfrom()");
 		}
     sscanf(buf, "%3d ", &channels);
-    pruDataMem_byte[DMX_CHANNELS_ADDR] = channels; // does this get updated too often?
+    pruDataMem_byte[DMX_CHANNELS_ADDR] = channels+1; // does this get updated too often?
     channel = 0;
 		buf[packet_length] = 0;
-		for (i=0; i<packet_length; i+=4) {
+		for (i=4; i<packet_length; i+=4) {
 //			printf("\tReceived packet (size %d) from %s:%d\nData: %s\n\n", packet_length, inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port), buf);
-			sscanf(buf+i, "%3d ", &channel, &value);
+			sscanf(buf+i, "%3d ", &value);
+//			printf("%3d %3d ", channel, value);
 			pruDataMem_byte[channel++] = value;
 		}
+//		printf("\n");
  	}
 
 	close(s);
