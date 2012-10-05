@@ -8,10 +8,8 @@ settings:
   flowerConf: flowers.conf
   scenesConf: scenes.conf
 
-  outputMode: render
-  renderFile: render.out
+  outputMode: network
+  inputMode: scene
 
-#  outputMode: network
-
-#  inputMode: playback
+  sceneRepeat: True
 

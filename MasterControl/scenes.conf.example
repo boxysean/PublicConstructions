@@ -1,4 +1,4 @@
-time: &TIME 1000
+time: &TIME 250
 
 scenes:
  - name: "One at a time"

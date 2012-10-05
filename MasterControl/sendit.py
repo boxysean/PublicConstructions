@@ -24,6 +24,7 @@ DEFAULT_SCENES_FILE = "scenes.conf"
 
 DEFAULT_SCENE_TIME = 10000
 DEFAULT_SCENE_DURATION = 10000
+DEFAULT_SCENE_REPEAT = True
 
 MAX_FRAMES = -1
 
@@ -42,6 +43,7 @@ effects = []
 _flowers = []
 scenes = []
 sceneIdx = -1
+sceneRepeat = DEFAULT_SCENE_REPEAT
 
 FPS = DEFAULT_FPS
 frameCount = 0
@@ -421,6 +423,7 @@ def load(fileName, flowerFile=None, sceneFile=None):
   global renderFile
   global inputMode
   global playbackFile
+  global sceneRepeat
 
   log("[SETTINGS]", fileName)
 
@@ -471,6 +474,8 @@ def load(fileName, flowerFile=None, sceneFile=None):
       sceneFile = settings.get("scenesConf", DEFAULT_SCENES_FILE)
     log("[SCENE]", sceneFile)
     loadScenes(sceneFile)
+
+  sceneRepeat = settings.get("sceneRepeat", DEFAULT_SCENE_REPEAT)
 
 ################################################################################
 
@@ -696,7 +701,10 @@ def loop():
     # next scene
     sceneIdx = sceneIdx+1
     if sceneIdx >= len(scenes):
-      sceneIdx = sceneIdx - len(scenes)
+      if sceneRepeat:
+        sceneIdx = sceneIdx - len(scenes)
+      else:
+        return
     scene = scenes[sceneIdx]
     scene.startTime = time
 
@@ -752,6 +760,9 @@ if __name__ == "__main__":
       print 'took too long'
 
     frameCount = frameCount + 1
+
+    if not sceneRepeat and sceneIdx >= len(scenes):
+      break
 
   if outputMode == "network":
     sock.close()
