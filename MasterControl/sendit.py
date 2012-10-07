@@ -182,7 +182,7 @@ class Full(Effect):
 ################################################################################
 
 class GlistenSingle(Effect):
-  def __init__(self, obj, fadeOut=0.25, frames=FPS):
+  def __init__(self, obj, fadeOut=1, frames=FPS):
     self.obj = obj
     self.fadeOut = fadeOut
     self.frames = frames
@@ -197,9 +197,9 @@ class GlistenSingle(Effect):
     pass
 
   def next(self):
-    self.obj.set(self, self.value)
-    if self.fadeOut > 0:
-      self.value = self.value - (float(self.maxValue) / (self.frames * self.fadeOut))
+    self.obj.set(self, self.maxValue-self.value)
+    if self.fadeOut > 0 and self.value > 0:
+      self.value = max(self.value - (float(self.maxValue) / (self.frames * self.fadeOut)), 0)
 
   def setBrightness(self, value):
     self.value = value
@@ -207,7 +207,7 @@ class GlistenSingle(Effect):
 
 class Glisten(Effect):
   # fade, expected time on, expected time off
-  def __init__(self, objs, brightness=HIGH, fadeOut=0.25, exp=1.0, expOn=-1, expOff=-1, frames=FPS):
+  def __init__(self, objs, brightness=HIGH, fadeOut=1, exp=1.0, expOn=-1, expOff=-1, frames=FPS):
     self.objs = objs
     self.brightness = brightness
     self.fadeOut = fadeOut
@@ -272,25 +272,30 @@ class Glisten(Effect):
 ################################################################################
 
 class Fade(Effect):
-  def __init__(self, objs, frames=FPS, brightness=HIGH):
+  def __init__(self, objs, frames=FPS, brightness=HIGH, delayBetween=0):
     self.objs = objs
     self.frames = frames
     self.brightness = brightness
+    self.delayBetween = delayBetween
 
     self.curFrame = 0
 
   def next(self):
+    if self.frames == 0: return
+
     if self.curFrame < self.frames/2:
       curBrightness = int(float(self.curFrame) / self.frames * self.brightness * 2)
-    else:
+    elif self.curFrame < self.frames:
       curBrightness = int(float(self.frames - self.curFrame) / self.frames * self.brightness * 2)
+    else:
+      curBrightness = 0
       
     for obj in self.objs:
       obj.set(self, curBrightness)
 
     self.curFrame = self.curFrame + 1
-    if self.curFrame >= self.frames:
-      self.curFrame = self.curFrame - self.frames
+    if self.curFrame >= self.frames + self.delayBetween:
+      self.curFrame = self.curFrame - self.frames - self.delayBetween
 
 ################################################################################
 
@@ -576,9 +581,14 @@ def makeEffect(effect):
     else:
       frames = params.get("frames", FPS)
 
+    if "delayBetweenTime" in params:
+      delayBetween = int(params["delayBetweenTime"] / 1000.0 * FPS)
+    else:
+      delayBetween = params.get("delayBetween", 0)
+
     lightObjs = getLightObjs(params.get("lightIdx", []))
     flowerObjs = getFlowerObjs(params.get("flowerIdx", []))
-    return Fade(lightObjs + flowerObjs, brightness=brightness, frames=frames)
+    return Fade(lightObjs + flowerObjs, brightness=brightness, frames=frames, delayBetween=delayBetween)
 
   elif effectType == "Circle":
     flowerObjs = getFlowerObjs(params.get("flowerIdx", []))
@@ -675,7 +685,7 @@ def loop():
       payload = playbackFile.readline()
     if payload[-1] == "\n":
       payload = payload[:-1]
-    print "playback payload", payload
+    #print "playback payload", payload
     output(payload)
     return
 
@@ -732,7 +742,7 @@ def loop():
 #  print ""
 
   payload = constructPayload(flowerRemapping)
-  log("payload %s" % (payload))
+#  log("payload %s" % (payload))
   output(payload)
 
 ################################################################################

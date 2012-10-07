@@ -7,7 +7,7 @@ import argparse
 
 from math import ceil
 
-IP = "127.0.0.1"
+IP = "192.168.2.103"
 PORT = 9930
 
 N_FLOWERS = 16
